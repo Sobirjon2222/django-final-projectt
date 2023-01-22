@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    {% load static %}
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+
+ <nav class="navbar navbar-light bg-light">
+    <div class="container-fluid">
+        <div class="navbar-header">
+              <a class="navbar-brand" href="{% url 'onlinecourse:index' %}">Home</a>
+        </div>
+        <ul class="nav navbar-nav navbar-right">
+            {% if user.is_authenticated %}
+            <li>
+                <a class="btn btn-link" href="#">{{ user.first_name }}({{ user.username }})</a>
+                <a class="btn btn-link" href="{% url 'onlinecourse:logout' %}">Logout</a>
+            </li>
+            {% else %}
+            <li>
+                <form class="form-inline" action="{% url 'onlinecourse:login' %}" method="post">
+                    {% csrf_token %}
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Username" name="username" >
+                        <input type="password" class="form-control" placeholder="Username" name="psw" >
+                        <button class="btn btn-primary" type="submit">Login</button>
+                        <a class="btn btn-link" href="{% url 'onlinecourse:registration' %}">Sign Up</a>
+                    </div>
+                </form>
+            </li>
+            {% endif %}
+        </ul>
+    </div>
+</nav>
+
+<div class="container-fluid">
+    {% if grade > 80 %} 
+    <div class="alert alert-success">
+       <!--HINT Display passed info -->
+       <b>Congratulations {{user.first_name}}!</b>
+       <p>You have passed the {{course.lesson.title}} exam with <b>{{grade}}%</b> out of total marks <b>100!</b></p>
+    </div>
+        {% else %}
+        <div class="alert alert-danger">
+            <!--HINT Display failed info -->
+            <b>Sorry {{user.first_name}}</b>
+            <p>You have failed the exam. You scored <b>{{grade}}%</b> out of total marks <b>100</b>! You need to score
+                at least <b>80%</b>!
+            </p>
+        </div>
+        <a class="btn btn-link text-danger" href="{% url 'onlinecourse:course_details' course.id %}"><b>Attempt the test again</b></a>
+        {% endif %}
+        <div class="card-columns-vertical mt-1">
+        <h5 class="">Exam results</h5>
+            <!--HINT Display exam results-->
+            {% if lesson in course.lesson_set.all %}
+            {% for question in lesson.question_set.all %}
+            <div class="card mt-1">
+                <div class="card-header"><h5>{{ question.content }}</h5></div>
+                <div class="form-group">
+                    {% for choice in question.choice_set.all %}
+                    <div class="form-check">
+                        {% if choice.is_correct and choice in choices %}
+                        <div class="text-success">Correct answer: {{ choice.choice_text }}</div>
+                        {% else %}{% if choice.is_correct and not choice in choices %}
+                        <div class="text-warning">Not selected: {{ choice.choice_text }}</div>
+                        {% else %}{% if not choice.is_correct and choice in choices %}
+                        <div class="text-danger">Wrong answer: {{ choice.choice_text }}</div>
+                        {% else %}
+                        <div>{{ choice.choice_text }}</div>
+                        {% endif %}
+                        {% endif %}
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+            {% endif %}
+
+            <br>
+            <br>
+        </div>
+    </div>
+</body>
+</html>
